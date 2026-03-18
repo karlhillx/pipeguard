@@ -1,0 +1,22 @@
+image: node:latest
+
+pipelines:
+  default:
+    - step:
+        name: build
+        script:
+          - npm install
+          - npm run build
+  branches:
+    master:
+      - step:
+          name: test
+          script:
+            - npm test
+      - step:
+          name: deploy-prod
+          deployment: production
+          trigger: automatic
+          script:
+            - pipe: docker/push-image:latest
+            - pipe: atlassian/slack-notify:2.0.0
