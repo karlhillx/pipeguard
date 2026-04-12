@@ -2,9 +2,9 @@
 
 **PipeGuard** is a Go-based policy-as-code validator for Bitbucket Pipelines. It enforces organizational standards, security best practices, and CI/CD governance beyond basic YAML validity.
 
-## Staff-Level Positioning
+## Platform Governance
 
-In modern engineering organizations, platform teams must balance developer autonomy with organizational safety. PipeGuard provides the "guardrails" necessary to:
+PipeGuard provides the "guardrails" necessary to:
 
 - **Enforce Security**: Prevent the use of untrusted Bitbucket Pipes or unversioned/`:latest` Docker images.
 - **Ensure Stability**: Mandate manual triggers for production deployments to prevent accidental releases.
