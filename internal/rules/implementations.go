@@ -128,34 +128,37 @@ func (r *AllowPipeListRule) Validate(config *parser.PipelineConfig) []Issue {
 		for _, sd := range steps {
 			if sd.Step != nil {
 				for _, entry := range sd.Step.Script {
-					var pipeStr string
+					var pipeName string
 					switch v := entry.(type) {
-					case string:
-						pipeStr = v
 					case map[string]interface{}:
+						// Bitbucket Pipes are defined as {pipe: "pipe-name:version"} in YAML
 						if p, ok := v["pipe"]; ok {
-							pipeStr = fmt.Sprintf("%v", p)
+							pipeName = fmt.Sprintf("%v", p)
+						}
+					case string:
+						// Strings prefixed with the Atlassian registry are also pipes
+						if strings.HasPrefix(v, "docker-public.packages.atlassian.com") {
+							pipeName = v
 						}
 					}
 
-					if strings.HasPrefix(pipeStr, "docker-public.packages.atlassian.com") || strings.Contains(pipeStr, "pipe:") {
-						// Clean up pipe name if it's the full string or starts with pipe:
-						pipeName := strings.TrimPrefix(pipeStr, "pipe:")
-						
-						allowed := false
-						for _, allowedPipe := range r.AllowedPipes {
-							if strings.HasPrefix(pipeName, allowedPipe) {
-								allowed = true
-								break
-							}
+					if pipeName == "" {
+						continue
+					}
+
+					allowed := false
+					for _, allowedPipe := range r.AllowedPipes {
+						if strings.HasPrefix(pipeName, allowedPipe) {
+							allowed = true
+							break
 						}
-						if !allowed {
-							issues = append(issues, Issue{
-								RuleID:   r.ID(),
-								Message:  "Forbidden pipe used in " + loc + ": " + pipeName,
-								Severity: SeverityWarning,
-							})
-						}
+					}
+					if !allowed {
+						issues = append(issues, Issue{
+							RuleID:   r.ID(),
+							Message:  "Forbidden pipe used in " + loc + ": " + pipeName,
+							Severity: SeverityWarning,
+						})
 					}
 				}
 			}
